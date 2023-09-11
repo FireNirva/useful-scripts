@@ -18,6 +18,12 @@ for /f "usebackq delims=" %%a in (`powershell -Command "[Net.ServicePointManager
 :: Set the latest file name and folder path variables
 for %%i in (%LATEST_URL%) do set LATEST_FILE_NAME=%%~nxi
 set "DESKTOP_PATH=%USERPROFILE%\Desktop\bzminer"
+
+:: Create the folder if it does not exist
+if not exist "%DESKTOP_PATH%" (
+    mkdir "%DESKTOP_PATH%"
+)
+
 set "LATEST_FOLDER_NAME=%LATEST_FILE_NAME:.zip=%"
 set "LATEST_FOLDER_NAME=%LATEST_FOLDER_NAME:_windows=%"
 set "LATEST_FOLDER_PATH=%DESKTOP_PATH%\%LATEST_FOLDER_NAME%_windows"

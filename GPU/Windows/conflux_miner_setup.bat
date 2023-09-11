@@ -15,14 +15,17 @@ powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.Security
 echo Latest File Name:
 powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; $LatestRelease = Invoke-WebRequest -Uri 'https://api.github.com/repos/trexminer/T-Rex/releases/latest' -UseBasicParsing | ConvertFrom-Json; $LatestFileName = ($LatestRelease.assets | Where-Object { $_.name -like '*win.zip' }).name; Write-Host $LatestFileName"
 
-:: Continue with the rest of the script as before...
-
 set "LATEST_URL="
 for /f "usebackq delims=" %%a in (`powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; $LatestRelease = Invoke-WebRequest -Uri 'https://api.github.com/repos/trexminer/T-Rex/releases/latest' -UseBasicParsing | ConvertFrom-Json; $LatestUrl = ($LatestRelease.assets | Where-Object { $_.name -like '*win.zip' }).browser_download_url; Write-Host $LatestUrl"`) do set "LATEST_URL=%%a"
 
 for %%i in (%LATEST_URL%) do set LATEST_FILE_NAME=%%~nxi
 
 set "DESKTOP_PATH=%USERPROFILE%\Desktop\trex_miner"
+
+:: Create the folder if it does not exist
+if not exist "%DESKTOP_PATH%" (
+    mkdir "%DESKTOP_PATH%"
+)
 
 set "LATEST_FOLDER_NAME=%LATEST_FILE_NAME:.zip=%"
 

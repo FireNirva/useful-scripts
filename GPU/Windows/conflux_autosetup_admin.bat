@@ -1,50 +1,32 @@
 @echo off
-:: ===================================================================
-:: Script Title: IronFish Miner Auto Setup
+:: =========================================================================================================
+:: Script Name: Conflux Miner Pool Latency Tester and Setup Script
 :: Author: FireNirva
 :: Version: 1.0
 :: Date: 2023-09-10
 :: 
 :: Description:
-:: This script automates the setup process for the IronFish Miner. 
-:: It performs the following operations:
+:: This script performs the following operations:
 ::
-:: 1. Elevation to administrative privileges: Ensures that the script
-::    runs with the necessary administrative rights.
+:: 1. Requests administrative privileges upon execution.
+:: 2. Sets up individual variables for each mining pool address and creates an array-like structure to hold all the addresses.
+:: 3. Iterates over each mining pool address, extracting the host and port, and tests the latency using a PowerShell command.
+:: 4. Records the pool with the lowest latency and stores its details.
+:: 5. Sets up necessary variables including finding or downloading the miner setup file from a predefined path or a GitHub URL.
+:: 6. Creates an XML task definition for a Windows Task Scheduler job.
+:: 7. Creates and runs a scheduled task using the task definition, to execute the miner setup with the optimal mining pool address and other predefined parameters upon system boot.
 ::
-:: 2. Initialization and Variable Setup: 
-::    - Defines an array of mining pool addresses.
-::    - Sets the initial lowest latency to a high number.
-::
-:: 3. Latency Testing: 
-::    - Iterates through the array of mining pool addresses to test 
-::      the latency to each address.
-::    - Identifies the best mining pool with the lowest latency.
-::
-:: 4. Miner Setup File Retrieval: 
-::    - Searches for the IronFish miner setup file in a specified path.
-::    - If the file is not found, it attempts to download it from a 
-::      predefined GitHub URL.
-::
-:: 5. Task Scheduler Setup: 
-::    - Creates an XML task definition file for the Windows Task Scheduler.
-::    - Registers a new task to run the IronFish miner setup file at 
-::      system startup with a delay of 10 seconds.
-::
-:: 6. Task Execution: 
-::    - Executes the newly created task immediately.
+:: Instructions:
+:: - Save this script as a .bat file and run it with administrative privileges.
+:: - The script will automatically find the best pool based on latency and set up a scheduled task to run the miner setup at boot.
+:: - Ensure the miner setup file is available at the specified path or accessible via the specified GitHub URL.
+:: - Update the pool addresses, wallet address, worker name, and other variables as necessary before running the script.
 ::
 :: Note:
-:: The script leverages PowerShell to perform latency testing and file 
-:: downloading operations. It requires Windows Task Scheduler and 
-:: administrative privileges to function correctly.
-::
-:: Usage:
-:: Run the script in a command prompt with administrative rights.
-:: The script will automate the IronFish miner setup using the best 
-:: mining pool based on the latency tests.
+:: - The script assumes PowerShell and schtasks are available on the system.
+:: - The script uses a try-catch block in PowerShell to handle exceptions and sets a high latency value in case of errors, to avoid choosing an unreachable pool.
 :: 
-:: ===================================================================
+:: =========================================================================================================
 
 :: -------------------------------------------
 :: Elevate script to run with administrative privileges
@@ -76,19 +58,19 @@ setlocal enabledelayedexpansion
 set "LOWEST_LATENCY=100000"
 
 :: Define each pool address with a unique variable
-set "POOL1=stratum+tcp://de.ironfish.herominers.com:1145"
-set "POOL2=stratum+tcp://fi.ironfish.herominers.com:1145"
-set "POOL3=stratum+tcp://ru.ironfish.herominers.com:1145"
-set "POOL4=stratum+tcp://ca.ironfish.herominers.com:1145"
-set "POOL5=stratum+tcp://us.ironfish.herominers.com:1145"
-set "POOL6=stratum+tcp://us2.ironfish.herominers.com:1145"
-set "POOL7=stratum+tcp://br.ironfish.herominers.com:1145"
-set "POOL8=stratum+tcp://hk.ironfish.herominers.com:1145"
-set "POOL9=stratum+tcp://kr.ironfish.herominers.com:1145"
-set "POOL10=stratum+tcp://in.ironfish.herominers.com:1145"
-set "POOL11=stratum+tcp://sg.ironfish.herominers.com:1145"
-set "POOL12=stratum+tcp://tr.ironfish.herominers.com:1145"
-set "POOL13=stratum+tcp://au.ironfish.herominers.com:1145"
+set "POOL1=stratum+tcp://de.conflux.herominers.com:1170"
+set "POOL2=stratum+tcp://fi.conflux.herominers.com:1170"
+set "POOL3=stratum+tcp://ru.conflux.herominers.com:1170"
+set "POOL4=stratum+tcp://ca.conflux.herominers.com:1170"
+set "POOL5=stratum+tcp://us.conflux.herominers.com:1170"
+set "POOL6=stratum+tcp://us2.conflux.herominers.com:1170"
+set "POOL7=stratum+tcp://br.conflux.herominers.com:1170"
+set "POOL8=stratum+tcp://hk.conflux.herominers.com:1170"
+set "POOL9=stratum+tcp://kr.conflux.herominers.com:1170"
+set "POOL10=stratum+tcp://in.conflux.herominers.com:1170"
+set "POOL11=stratum+tcp://sg.conflux.herominers.com:1170"
+set "POOL12=stratum+tcp://tr.conflux.herominers.com:1170"
+set "POOL13=stratum+tcp://au.conflux.herominers.com:1170"
 
 :: Create an array-like structure using the defined pool variables
 set "MINING_POOL_ADDRESSES=%POOL1% %POOL2% %POOL3% %POOL4% %POOL5% %POOL6% %POOL7% %POOL8% %POOL9% %POOL10% %POOL11% %POOL12% %POOL13%"
@@ -119,20 +101,20 @@ for %%A in (%MINING_POOL_ADDRESSES%) do (
 :: Miner Setup File Retrieval
 :: -------------------------------------------
 :SetupFileRetrieval
-set "IRONFISH_MINER_FILE=ironfish_miner_setup.bat"
-set "WALLET_ADDRESS=a0ace9efb58d290d84672351bca6c951587c93b14a870d18081329b72cf754d2"
-set "WORKER_NAME=test4"
-set "POOL_URL=!BEST_MINING_POOL!"
+set "TREX_MINER_SETUP_FILE=conflux_miner_setup.bat"
+set "MINING_POOL_ADDRESS=!BEST_MINING_POOL!"
+set "CONFLUX_WALLET_ADDRESS=cfx:aanxwjsuf6e2yyntw1ecjyagrj24s9wvkjum1egd6m"
+set "WORKER_NAME=worker1"
 set "BASE_PATH=C:\Users"
 
 :: Find the setup file
-for /f "delims=" %%F in ('dir /s /b "%BASE_PATH%\%IRONFISH_MINER_FILE%" 2^>nul') do (
-    set "IRONFISH_MINER_FILE_PATH=%%F"
+for /f "delims=" %%F in ('dir /s /b "%BASE_PATH%\%TREX_MINER_SETUP_FILE%" 2^>nul') do (
+    set "TREX_MINER_SETUP_FILE_PATH=%%F"
     goto :found
 )
 
 :notfound
-echo Could not find %IRONFISH_MINER_FILE%
+echo Could not find %TREX_MINER_SETUP_FILE%
 echo Downloading setup file from GitHub...
 
 :: Specify a directory where the file will be downloaded
@@ -144,12 +126,12 @@ if not exist "%DOWNLOAD_DIR%" (
 )
 
 :: Download the file using PowerShell
-powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/FireNirva/useful-scripts/main/GPU/ironfish_miner_setup.bat' -OutFile '%DOWNLOAD_DIR%\%IRONFISH_MINER_FILE_PATH%'"
+powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/FireNirva/useful-scripts/main/GPU/conflux_miner_setup.bat' -OutFile '%DOWNLOAD_DIR%\%TREX_MINER_SETUP_FILE%'"
 
 :: Check if the file was downloaded successfully
-if exist "%DOWNLOAD_DIR%\%IRONFISH_MINER_FILE_PATH%" (
+if exist "%DOWNLOAD_DIR%\%TREX_MINER_SETUP_FILE%" (
     echo Downloaded setup file successfully.
-    set "IRONFISH_MINER_FILE_PATH=%DOWNLOAD_DIR%\%IRONFISH_MINER_FILE_PATH%"
+    set "TREX_MINER_SETUP_FILE_PATH=%DOWNLOAD_DIR%\%TREX_MINER_SETUP_FILE%"
     goto :found
 ) else (
     echo Failed to download the setup file.
@@ -157,7 +139,7 @@ if exist "%DOWNLOAD_DIR%\%IRONFISH_MINER_FILE_PATH%" (
 )
 
 :found
-echo Found setup file at: !IRONFISH_MINER_FILE_PATH!
+echo Found setup file at: !TREX_MINER_SETUP_FILE_PATH!
 
 :: -------------------------------------------
 :: Task Scheduler Setup
@@ -199,15 +181,33 @@ echo   ^</Settings^>
 echo   ^<Actions Context="Author"^>
 echo     ^<Exec^>
 echo       ^<Command^>cmd.exe^</Command^>
-echo       ^<Arguments^>/C "!IRONFISH_MINER_FILE_PATH!" %WALLET_ADDRESS% %WORKER_NAME% %POOL_URL%^</Arguments^>
+echo       ^<Arguments^>/C "!TREX_MINER_SETUP_FILE_PATH!" %MINING_POOL_ADDRESS% %CONFLUX_WALLET_ADDRESS% %WORKER_NAME%^</Arguments^>
 echo     ^</Exec^>
 echo   ^</Actions^>
 echo ^</Task^>
 ) > TaskDefinition.xml
-
 echo Task definition created.
+
+:: Check if the task exists and stop and delete it if necessary
+schtasks /query /tn "RunConfluxMinerSetup" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    schtasks /end /tn "RunConfluxMinerSetup"
+    if %ERRORLEVEL% NEQ 0 (
+        echo Failed to stop the existing scheduled task.
+        exit /b 1
+    )
+    echo Existing scheduled task stopped.
+
+    schtasks /delete /tn "RunConfluxMinerSetup" /F
+    if %ERRORLEVEL% NEQ 0 (
+        echo Failed to delete the existing scheduled task.
+        exit /b 1
+    )
+    echo Existing scheduled task deleted.
+)
+
 :: Create and run the scheduled task
-schtasks /create /tn "RunIronFishMinerSetup" /xml "TaskDefinition.xml"
+schtasks /create /tn "RunConfluxMinerSetup" /xml "TaskDefinition.xml"
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to create the scheduled task.
     exit /b 1
@@ -220,11 +220,12 @@ del TaskDefinition.xml
 :: -------------------------------------------
 :: Task Execution
 :: -------------------------------------------
+:TaskExecution
+
 :: Run the scheduled task
-schtasks /run /tn "RunIronFishMinerSetup"
+schtasks /run /tn "RunConfluxMinerSetup"
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to run the scheduled task.
     exit /b 1
 )
 echo Scheduled task started.
-
